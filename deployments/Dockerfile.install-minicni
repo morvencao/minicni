@@ -1,0 +1,11 @@
+FROM alpine:3.13
+
+LABEL description="Installer for the minicni."
+
+RUN apk --update --no-cache add curl jq bash && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY build/_output/bin/minicni /cni-plugins/minicni
+COPY deployments/scripts/install-minicni.sh /install-minicni.sh
+
+ENTRYPOINT ["/install-minicni.sh"]

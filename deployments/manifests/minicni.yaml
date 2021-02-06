@@ -1,0 +1,139 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: minicni
+  labels:
+    app: minicni
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "nodes"]
+    verbs: ["get"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: minicni
+  namespace: kube-system
+  labels:
+    app: minicni
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: minicni
+  labels:
+    app: minicni
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: minicni
+subjects:
+- kind: ServiceAccount
+  name: minicni
+  namespace: kube-system
+---
+# The configmap will be used to configure CNI installation.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minicni-config
+  namespace: kube-system
+  labels:
+    app: minicni
+data:
+  # The CNI network configuration to add to the plugin chain on each node. The special
+  # values in this config will be automatically populated.
+  cni_network_config: |-
+        {
+          "cniVersion": "0.1.0",
+          "name": "minicni",
+          "type": "minicni",
+          "bridge": "minicni0",
+          "mtu": 1500,
+          "subnet": __NODE_SUBNET__
+        }
+
+---
+# This manifest used to installs the minicni plugin and config on each master and worker node
+# in a Kubernetes cluster with install-minicni.sh script in the container.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: minicni-node
+  namespace: kube-system
+  labels:
+    app: minicni
+spec:
+  selector:
+    matchLabels:
+      app: minicni
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: minicni
+      annotations:
+        # Mark this pod as a critical add-on to ensure it gets
+        # priority scheduling and that its resources are reserved
+        # if it ever gets evicted.
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      nodeSelector:
+        # The minicni currently only works on linux node.
+        beta.kubernetes.io/os: linux
+      hostNetwork: true
+      tolerations:
+        # Make sure minicni-node gets scheduled on all nodes.
+        - effect: NoSchedule
+          operator: Exists
+        # Mark the pod as a critical add-on for rescheduling.
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+      serviceAccountName: minicni
+      containers:
+        # This container installs the minicni binary
+        # and CNI network config file on each node.
+        - name: install-minicni
+          image: quay.io/morvencao/install-minicni:0.1.0
+          imagePullPolicy: Always
+          env:
+            # Pod name
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            # Node name
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            # Name of the CNI config file to create.
+            - name: CNI_CONF_NAME
+              value: "10-minicni.conf"
+            # The CNI network config to install on each node.
+            - name: CNI_NETWORK_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: minicni-config
+                  key: cni_network_config
+          volumeMounts:
+            - mountPath: /host/opt/cni/bin
+              name: cni-bin-dir
+            - mountPath: /host/etc/cni/net.d
+              name: cni-net-dir
+      volumes:
+        # CNI bininary and configuration directories
+        - name: cni-bin-dir
+          hostPath:
+            path: /opt/cni/bin
+        - name: cni-net-dir
+          hostPath:
+            path: /etc/cni/net.d
+---
+

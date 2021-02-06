@@ -41,9 +41,8 @@ func CreateOrUpdateBridge(name, ip string, mtu int) (*netlink.Bridge, error) {
 				return nil, fmt.Errorf("failed to set bridge %q up: %v", name, err)
 			}
 			return br, nil
-		} else {
-			return nil, fmt.Errorf("could not find link %s: %v", name, err)
 		}
+		return nil, fmt.Errorf("could not find link %s: %v", name, err)
 	}
 	currentBr, ok := l.(*netlink.Bridge)
 	if !ok {

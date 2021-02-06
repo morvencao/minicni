@@ -1,0 +1,10 @@
+ignored:
+  - FAKE_DL3003
+  - DL3006
+  - DL3007
+  - DL3018
+
+trustedRegistries:
+  - docker.io
+  - gcr.io
+  - quay.io

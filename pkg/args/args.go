@@ -51,8 +51,8 @@ func GetArgsFromEnv() (string, *CmdArgs, error) {
 	var cmd, conID, netns, ifName, path, args string
 	cmd = os.Getenv(CommandEnvKey)
 	if cmd == "" {
-		fmt.Fprintf(os.Stderr, "%s environment variable is missing!", CommandEnvKey)
-		return "", nil, fmt.Errorf("%s environment variable is missing!", CommandEnvKey)
+		fmt.Fprintf(os.Stderr, "Environment variable %s is missing!", CommandEnvKey)
+		return "", nil, fmt.Errorf("environment variable %s is missing", CommandEnvKey)
 	}
 	var cmdEnvs = []CmdEnv{
 		{
@@ -109,18 +109,18 @@ func GetArgsFromEnv() (string, *CmdArgs, error) {
 	argsMissing := false
 	for _, v := range cmdEnvs {
 		v.CmdArgValue = os.Getenv(v.CmdArgKey)
-		if v.CmdArgValue == "" && v.ReqForCmd[cmd] == true {
-			fmt.Fprintf(os.Stderr, "%s environment variable is missing!", v.CmdArgKey)
+		if v.CmdArgValue == "" && v.ReqForCmd[cmd] {
+			fmt.Fprintf(os.Stderr, "The %s environment variable is missing!", v.CmdArgKey)
 			argsMissing = true
 		}
 	}
 	if argsMissing {
-		return "", nil, fmt.Errorf("required environment variable is missing!")
+		return "", nil, fmt.Errorf("required environment variable is missing")
 	}
 
 	stdinData, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
-		return "", nil, fmt.Errorf("error reading from stdin: %v", err)
+		return "", nil, fmt.Errorf("failed to read from stdin: %v", err)
 	}
 	cmdArgs := &CmdArgs{
 		ContainerID: conID,

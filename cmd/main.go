@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	IP_STORE = "/tmp/reserved_ips"
+	IPStore = "/tmp/reserved_ips"
 )
 
 func init() {
@@ -26,7 +26,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "getting cmd arguments with error: %v", err)
 	}
 
-	fh := handler.NewFileHandler(IP_STORE)
+	fh := handler.NewFileHandler(IPStore)
 
 	switch cmd {
 	case "ADD":

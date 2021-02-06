@@ -39,7 +39,7 @@ func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
 	gwIP := allIPs[0]
 
 	// open or create the file that stores all the reserved IPs
-	f, err := os.OpenFile(fh.IPStore, os.O_RDWR|os.O_CREATE, 0644)
+	f, err := os.OpenFile(fh.IPStore, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		return fmt.Errorf("failed to open file that stores reserved IPs %v", err)
 	}
@@ -68,7 +68,7 @@ func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
 		}
 	}
 	if podIP == "" {
-		return fmt.Errorf("No IP available!")
+		return fmt.Errorf("no IP available")
 	}
 
 	// Create or update bridge
@@ -97,8 +97,8 @@ func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
 	}
 
 	// write reserved IPs back into file
-	if err := ioutil.WriteFile(fh.IPStore, []byte(strings.Join(reservedIPs, "\n")), 0644); err != nil {
-		fmt.Errorf("failed to write reserved IPs into file: %v", err)
+	if err := ioutil.WriteFile(fh.IPStore, []byte(strings.Join(reservedIPs, "\n")), 0600); err != nil {
+		return fmt.Errorf("failed to write reserved IPs into file: %v", err)
 	}
 
 	return nil
@@ -121,7 +121,7 @@ func (fh *FileHandler) HandleDel(cmdArgs *args.CmdArgs) error {
 	}
 
 	// open or create the file that stores all the reserved IPs
-	f, err := os.OpenFile(fh.IPStore, os.O_RDWR|os.O_CREATE, 0644)
+	f, err := os.OpenFile(fh.IPStore, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		return fmt.Errorf("failed to open file that stores reserved IPs %v", err)
 	}
@@ -142,8 +142,8 @@ func (fh *FileHandler) HandleDel(cmdArgs *args.CmdArgs) error {
 	}
 
 	// write reserved IPs back into file
-	if err := ioutil.WriteFile(fh.IPStore, []byte(strings.Join(reservedIPs, "\n")), 0644); err != nil {
-		fmt.Errorf("failed to write reserved IPs into file: %v", err)
+	if err := ioutil.WriteFile(fh.IPStore, []byte(strings.Join(reservedIPs, "\n")), 0600); err != nil {
+		return fmt.Errorf("failed to write reserved IPs into file: %v", err)
 	}
 
 	return nil

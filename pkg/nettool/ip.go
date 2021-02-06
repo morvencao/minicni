@@ -14,8 +14,8 @@ func GetAllIPs(cidr string) ([]string, error) {
 	}
 	var ips []string
 	for ip := ip.Mask(ipnet.Mask); ipnet.Contains(ip); inc(ip) {
-		ip_net := &net.IPNet{IP: ip, Mask: ipnet.Mask}
-		ips = append(ips, ip_net.String())
+		tempIPNet := &net.IPNet{IP: ip, Mask: ipnet.Mask}
+		ips = append(ips, tempIPNet.String())
 	}
 	// remove network address and broadcast address
 	return ips[1 : len(ips)-1], nil
@@ -38,5 +38,5 @@ func RecycleIP(ip string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("IP not found in the reserved IP list.")
+	return fmt.Errorf("the IP not found in the reserved IP list")
 }
