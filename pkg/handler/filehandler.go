@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/morvencao/mccni/pkg/args"
-	"github.com/morvencao/mccni/pkg/nettool"
+	"github.com/morvencao/minicni/pkg/args"
+	"github.com/morvencao/minicni/pkg/nettool"
 
 	"github.com/containernetworking/plugins/pkg/ns"
 )
@@ -74,8 +74,8 @@ func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
 	// Create or update bridge
 	brName := cniConfig.Bridge
 	if brName != "" {
-		// fall back to default bridge name: mccni0
-		brName = "mccni0"
+		// fall back to default bridge name: minicni0
+		brName = "minicni0"
 	}
 	mtu := cniConfig.MTU
 	if mtu == 0 {

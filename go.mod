@@ -1,4 +1,4 @@
-module github.com/morvencao/mccni
+module github.com/morvencao/minicni
 
 go 1.15
 

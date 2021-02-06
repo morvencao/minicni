@@ -5,8 +5,8 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/morvencao/mccni/pkg/args"
-	"github.com/morvencao/mccni/pkg/handler"
+	"github.com/morvencao/minicni/pkg/args"
+	"github.com/morvencao/minicni/pkg/handler"
 )
 
 const (

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/morvencao/mccni/pkg/args"
+	"github.com/morvencao/minicni/pkg/args"
 )
 
 type Handler interface {
