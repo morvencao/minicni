@@ -9,16 +9,24 @@ import (
 
 	"github.com/morvencao/minicni/pkg/args"
 	"github.com/morvencao/minicni/pkg/nettool"
+	"github.com/morvencao/minicni/pkg/version"
 
 	"github.com/containernetworking/plugins/pkg/ns"
 )
 
 type FileHandler struct {
+	*version.VersionInfo
 	IPStore string
 }
 
 func NewFileHandler(filename string) Handler {
-	return &FileHandler{IPStore: filename}
+	return &FileHandler{
+		VersionInfo: &version.VersionInfo{
+			CniVersion:        version.Version,
+			SupportedVersions: []string{version.Version},
+		},
+		IPStore: filename,
+	}
 }
 
 func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
@@ -155,6 +163,10 @@ func (fh *FileHandler) HandleCheck(cmdArgs *args.CmdArgs) error {
 }
 
 func (fh *FileHandler) HandleVersion(cmdArgs *args.CmdArgs) error {
-	// to br implemented
+	versionInfo, err := json.Marshal(fh.VersionInfo)
+	if err != nil {
+		return err
+	}
+	fmt.Print(string(versionInfo))
 	return nil
 }
