@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: httpbin-master
+spec:
+  containers:
+  - name: httpbin
+    image: kennethreitz/httpbin:latest
+    imagePullPolicy: IfNotPresent
+    ports:
+    - containerPort: 80
+  nodeSelector:
+    beta.kubernetes.io/os: linux
+    role: master
+  tolerations:
+    # Make sure this pod gets scheduled on all nodes.
+    - effect: NoSchedule
+      operator: Exists
+    # Mark the pod as a critical add-on for rescheduling.
+    - key: CriticalAddonsOnly
+      operator: Exists
+    - effect: NoExecute
+      operator: Exists
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: netshoot-master
+spec:
+  containers:
+  - name: ubuntu
+    image: nicolaka/netshoot:latest
+    imagePullPolicy: IfNotPresent
+    command:
+      - "bin/bash"
+      - "-c"
+      - "sleep 10000"
+  nodeSelector:
+    beta.kubernetes.io/os: linux
+    role: master
+  tolerations:
+    # Make sure this pod gets scheduled on all nodes.
+    - effect: NoSchedule
+      operator: Exists
+    # Mark the pod as a critical add-on for rescheduling.
+    - key: CriticalAddonsOnly
+      operator: Exists
+    - effect: NoExecute
+      operator: Exists
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: httpbin-worker
+spec:
+  containers:
+  - name: httpbin
+    image: kennethreitz/httpbin:latest
+    imagePullPolicy: IfNotPresent
+    ports:
+    - containerPort: 80
+  nodeSelector:
+    beta.kubernetes.io/os: linux
+    role: worker
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: netshoot-worker
+spec:
+  containers:
+  - name: ubuntu
+    image: nicolaka/netshoot:latest
+    imagePullPolicy: IfNotPresent
+    command:
+      - "bin/bash"
+      - "-c"
+      - "sleep 10000"
+  nodeSelector:
+    beta.kubernetes.io/os: linux
+    role: worker
+
