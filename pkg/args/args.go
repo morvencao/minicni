@@ -38,12 +38,14 @@ type CmdArgs struct {
 }
 
 type CNIConfiguration struct {
-	CniVersion string `json:"cniVersion"`
-	Name       string `json:"name"`
-	Type       string `json:"type"`
-	Bridge     string `json:"bridge"`
-	MTU        int    `json:"mtu"`
-	Subnet     string `json:"subnet"`
+	CniVersion    string   `json:"cniVersion"`
+	Name          string   `json:"name"`
+	Type          string   `json:"type"`
+	Bridge        string   `json:"bridge"`
+	MTU           int      `json:"mtu"`
+	Subnet        string   `json:"subnet"`
+	NodeSubnets   []string `json:"nodeSubnets"`
+	NodeAddresses []string `json:"nodeAddresses"`
 }
 
 func GetArgsFromEnv() (string, *CmdArgs, error) {

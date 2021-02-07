@@ -36,6 +36,27 @@ function cleanup() {
 # error handle
 trap cleanup EXIT
 
+function validIPv4CIDR() {
+    # Check if the CIDR is valid IPv4 CIDR address
+    IPV4_CIDR_REGEX="(((25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?))(\/([8-9]|[1-2][0-9]|3[0-2]))([^0-9.]|$)"
+    if [[ $1 =~ ${IPV4_CIDR_REGEX} ]]
+    then
+        echo "${1} is a valid IPv4 CIDR address."
+    else
+        exit_with_message "${1} is not a valid IPv4 CIDR address!"
+    fi
+}
+
+function validIPv4Address() {
+    IPV4_ADDRESS_REGEX="^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"
+    if [[ $1 =~ ${IPV4_ADDRESS_REGEX} ]]
+    then
+        echo "${1} is a valid IPv4 address."
+    else
+        exit_with_message "${1} is not a valid IPv4 address!"
+    fi
+}
+
 ##########################################################################################
 # Copy the CNI plugins to the plugin directory
 ##########################################################################################
@@ -79,18 +100,29 @@ then
     exit_with_message "NODE_NAME not set."
 fi
 
+ALL_NODE_RESOURCES_PATH="${KUBERNETES_SERVICE_PROTOCOL}://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/api/v1/nodes"
+CURRENT_NODE_RESOURCE_PATH="${ALL_NODE_RESOURCES_PATH}/${NODE_NAME}"
+NODE_SUBNET=$(curl --cacert "${KUBE_CACERT}" --header "Authorization: Bearer ${SERVICEACCOUNT_TOKEN}" -X GET "${CURRENT_NODE_RESOURCE_PATH}" | jq ".spec.podCIDR")
+NODE_CIDRS=$(curl --cacert "${KUBE_CACERT}" --header "Authorization: Bearer ${SERVICEACCOUNT_TOKEN}" -X GET "${ALL_NODE_RESOURCES_PATH}" | jq ".items[]|.spec.podCIDR")
+NODE_ADDRESSES=$(curl --cacert "${KUBE_CACERT}" --header "Authorization: Bearer ${SERVICEACCOUNT_TOKEN}" -X GET "${ALL_NODE_RESOURCES_PATH}" | jq '.items[].status.addresses[]|select(.type=="InternalIP")|.address')
 
-NODE_RESOURCE_PATH="${KUBERNETES_SERVICE_PROTOCOL}://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/api/v1/nodes/${NODE_NAME}"
-NODE_SUBNET=$(curl --cacert "${KUBE_CACERT}" --header "Authorization: Bearer ${SERVICEACCOUNT_TOKEN}" -X GET "${NODE_RESOURCE_PATH}" | jq ".spec.podCIDR")
+NODE_CIDRS_STRING=""
+for cidr in ${NODE_CIDRS};
+do
+    # Check if the node subnet is valid IPv4 CIDR address
+    validIPv4CIDR "${cidr}"
+    NODE_CIDRS_STRING="${NODE_CIDRS_STRING}${cidr},"
+done
+NODE_CIDRS_STRING=${NODE_CIDRS_STRING%,}
 
-# Check if the node subnet is valid IPv4 CIDR address
-IPV4_CIDR_REGEX="(((25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?))(\/([8-9]|[1-2][0-9]|3[0-2]))([^0-9.]|$)"
-if [[ ${NODE_SUBNET} =~ ${IPV4_CIDR_REGEX} ]]
-then
-    echo "${NODE_SUBNET} is a valid IPv4 CIDR address."
-else
-    exit_with_message "${NODE_SUBNET} is not a valid IPv4 CIDR address!"
-fi
+NODE_ADDRESSES_STRING=""
+for addr in ${NODE_ADDRESSES};
+do
+    # Check if the node subnet is valid IPv4 CIDR address
+    #validIPv4Address "${addr}"
+    NODE_ADDRESSES_STRING="${NODE_ADDRESSES_STRING}${addr},"
+done
+NODE_ADDRESSES_STRING=${NODE_ADDRESSES_STRING%,}
 
 # exit if the NODE_NAME environment variable is not set.
 if [[ -z "${CNI_NETWORK_CONFIG}" ]];
@@ -105,6 +137,10 @@ EOF
 
 # Replace the __NODE_SUBNET__
 grep "__NODE_SUBNET__" "${TMP_CONF}" && sed -i s~__NODE_SUBNET__~"${NODE_SUBNET}"~g "${TMP_CONF}"
+# shellcheck disable=SC2086
+grep "__NODE_SUBNETS__" "${TMP_CONF}" && sed -i s~__NODE_SUBNETS__~${NODE_CIDRS_STRING}~g "${TMP_CONF}"
+# shellcheck disable=SC2086
+grep "__NODE_ADDRS__" "${TMP_CONF}" && sed -i s~__NODE_ADDRS__~${NODE_ADDRESSES_STRING}~g "${TMP_CONF}"
 
 # Log the config file
 echo "CNI config: $(cat "${TMP_CONF}")"
