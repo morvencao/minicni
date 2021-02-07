@@ -24,7 +24,7 @@ const (
 
 type CmdEnv struct {
 	CmdArgKey   string
-	CmdArgValue string
+	CmdArgValue *string
 	ReqForCmd   map[string]bool
 }
 
@@ -43,7 +43,6 @@ type CNIConfiguration struct {
 	Type       string `json:"type"`
 	Bridge     string `json:"bridge"`
 	MTU        int    `json:"mtu"`
-	Network    string `json:"network"`
 	Subnet     string `json:"subnet"`
 }
 
@@ -57,7 +56,7 @@ func GetArgsFromEnv() (string, *CmdArgs, error) {
 	var cmdEnvs = []CmdEnv{
 		{
 			ContainerIDEnvKey,
-			conID,
+			&conID,
 			map[string]bool{
 				AddCmd:     true,
 				DelCmd:     true,
@@ -67,7 +66,7 @@ func GetArgsFromEnv() (string, *CmdArgs, error) {
 		},
 		{
 			NetnsEnvKey,
-			netns,
+			&netns,
 			map[string]bool{
 				AddCmd:     true,
 				DelCmd:     false,
@@ -77,7 +76,7 @@ func GetArgsFromEnv() (string, *CmdArgs, error) {
 		},
 		{
 			IfNameEnvKey,
-			ifName,
+			&ifName,
 			map[string]bool{
 				AddCmd:     true,
 				DelCmd:     false,
@@ -87,7 +86,7 @@ func GetArgsFromEnv() (string, *CmdArgs, error) {
 		},
 		{
 			PathEnvKey,
-			path,
+			&path,
 			map[string]bool{
 				AddCmd:     false,
 				DelCmd:     false,
@@ -97,7 +96,7 @@ func GetArgsFromEnv() (string, *CmdArgs, error) {
 		},
 		{
 			ArgsEnvKey,
-			args,
+			&args,
 			map[string]bool{
 				AddCmd:     false,
 				DelCmd:     false,
@@ -108,8 +107,8 @@ func GetArgsFromEnv() (string, *CmdArgs, error) {
 	}
 	argsMissing := false
 	for _, v := range cmdEnvs {
-		v.CmdArgValue = os.Getenv(v.CmdArgKey)
-		if v.CmdArgValue == "" && v.ReqForCmd[cmd] {
+		*v.CmdArgValue = os.Getenv(v.CmdArgKey)
+		if *v.CmdArgValue == "" && v.ReqForCmd[cmd] {
 			fmt.Fprintf(os.Stderr, "The %s environment variable is missing!", v.CmdArgKey)
 			argsMissing = true
 		}

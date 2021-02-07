@@ -35,7 +35,7 @@ func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
 	fmt.Println(cmdArgs.IfName)
 	fmt.Println(cmdArgs.Path)
 	fmt.Println(cmdArgs.Args)
-	fmt.Println(cmdArgs.StdinData)
+	fmt.Println(string(cmdArgs.StdinData))
 	cniConfig := args.CNIConfiguration{}
 	if err := json.Unmarshal(cmdArgs.StdinData, &cniConfig); err != nil {
 		return err
@@ -45,6 +45,7 @@ func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
 		return err
 	}
 	gwIP := allIPs[0]
+	fmt.Printf("Gateway IP: %q", gwIP)
 
 	// open or create the file that stores all the reserved IPs
 	f, err := os.OpenFile(fh.IPStore, os.O_RDWR|os.O_CREATE, 0600)
@@ -78,6 +79,7 @@ func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
 	if podIP == "" {
 		return fmt.Errorf("no IP available")
 	}
+	fmt.Printf("Pod IP: %q", podIP)
 
 	// Create or update bridge
 	brName := cniConfig.Bridge
@@ -113,12 +115,6 @@ func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
 }
 
 func (fh *FileHandler) HandleDel(cmdArgs *args.CmdArgs) error {
-	fmt.Println(cmdArgs.ContainerID)
-	fmt.Println(cmdArgs.Netns)
-	fmt.Println(cmdArgs.IfName)
-	fmt.Println(cmdArgs.Path)
-	fmt.Println(cmdArgs.Args)
-	fmt.Println(cmdArgs.StdinData)
 	netns, err := ns.GetNS(cmdArgs.Netns)
 	if err != nil {
 		return err

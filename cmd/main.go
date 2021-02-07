@@ -41,7 +41,7 @@ func main() {
 		err = fmt.Errorf("unknown CNI_COMMAND: %s", cmd)
 	}
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "creating filehandler with error: %v", err)
+		fmt.Fprintf(os.Stderr, "Failed to handle CNI_COMMAND %q: %v", cmd, err)
 		os.Exit(1)
 	}
 }
