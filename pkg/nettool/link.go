@@ -72,7 +72,7 @@ func CreateOrUpdateBridge(name, ip string, mtu int) (*netlink.Bridge, error) {
 
 // SetupVeth sets up a pair of virtual ethernet devices in container netns
 // and then move the host-side veth into the hostNS namespace.
-func SetupVeth(netns ns.NetNS, br *netlink.Bridge, ifName, ip string, mtu int) error {
+func SetupVeth(netns ns.NetNS, br *netlink.Bridge, ifName, ip, gwip string, mtu int) error {
 	err := netns.Do(func(hostNS ns.NetNS) error {
 		hostVethName, veth, err := makeVethPair(ifName, mtu)
 		if err != nil {
@@ -88,6 +88,15 @@ func SetupVeth(netns ns.NetNS, br *netlink.Bridge, ifName, ip string, mtu int) e
 		}
 		if err = netlink.LinkSetUp(veth); err != nil {
 			return fmt.Errorf("failed to set veth %q up: %v", ifName, err)
+		}
+
+		// add bridge IP as the default route for container
+		gwNetIP, _, err := net.ParseCIDR(gwip)
+		if err != nil {
+			return fmt.Errorf("failed to parse gateway IP %q: %v", gwip, err)
+		}
+		if err = AddDefaultRoute(gwNetIP, veth); err != nil {
+			return fmt.Errorf("failed to add default route for %q: %v", ifName, err)
 		}
 
 		hostVeth, err := netlink.LinkByName(hostVethName)
@@ -120,6 +129,7 @@ func SetupVeth(netns ns.NetNS, br *netlink.Bridge, ifName, ip string, mtu int) e
 	if err != nil {
 		return fmt.Errorf("failed to set veth %q: %v", ifName, err)
 	}
+
 	return nil
 }
 

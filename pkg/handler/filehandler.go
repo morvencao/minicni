@@ -94,7 +94,7 @@ func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
 		return err
 	}
 
-	if err := nettool.SetupVeth(netns, br, cmdArgs.IfName, podIP, mtu); err != nil {
+	if err := nettool.SetupVeth(netns, br, cmdArgs.IfName, podIP, gwIP, mtu); err != nil {
 		return err
 	}
 
