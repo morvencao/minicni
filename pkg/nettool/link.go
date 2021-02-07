@@ -55,9 +55,12 @@ func CreateOrUpdateBridge(name, ip string, mtu int) (*netlink.Bridge, error) {
 	switch {
 	case len(addrs) > 1:
 		return nil, fmt.Errorf("unexpected addresses for bridge %q: %v", name, addrs)
-	case len(addrs) == 1 && !addr.Equal(addrs[0]):
-		if err = netlink.AddrReplace(currentBr, addr); err != nil {
-			return nil, fmt.Errorf("failed to replace address: %q for bridge %q: %v", addr, name, err)
+	case len(addrs) == 1:
+		if !addr.Equal(addrs[0]) {
+			// try to replace the address for the bridge
+			if err = netlink.AddrReplace(currentBr, addr); err != nil {
+				return nil, fmt.Errorf("failed to replace address: %q for bridge %q: %v", addr, name, err)
+			}
 		}
 	default:
 		if err = netlink.AddrAdd(currentBr, addr); err != nil {

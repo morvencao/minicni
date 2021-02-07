@@ -30,12 +30,6 @@ func NewFileHandler(filename string) Handler {
 }
 
 func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
-	fmt.Println(cmdArgs.ContainerID)
-	fmt.Println(cmdArgs.Netns)
-	fmt.Println(cmdArgs.IfName)
-	fmt.Println(cmdArgs.Path)
-	fmt.Println(cmdArgs.Args)
-	fmt.Println(string(cmdArgs.StdinData))
 	cniConfig := args.CNIConfiguration{}
 	if err := json.Unmarshal(cmdArgs.StdinData, &cniConfig); err != nil {
 		return err
@@ -45,7 +39,6 @@ func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
 		return err
 	}
 	gwIP := allIPs[0]
-	fmt.Printf("Gateway IP: %q", gwIP)
 
 	// open or create the file that stores all the reserved IPs
 	f, err := os.OpenFile(fh.IPStore, os.O_RDWR|os.O_CREATE, 0600)
@@ -79,7 +72,6 @@ func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
 	if podIP == "" {
 		return fmt.Errorf("no IP available")
 	}
-	fmt.Printf("Pod IP: %q", podIP)
 
 	// Create or update bridge
 	brName := cniConfig.Bridge
@@ -110,6 +102,22 @@ func (fh *FileHandler) HandleAdd(cmdArgs *args.CmdArgs) error {
 	if err := ioutil.WriteFile(fh.IPStore, []byte(strings.Join(reservedIPs, "\n")), 0600); err != nil {
 		return fmt.Errorf("failed to write reserved IPs into file: %v", err)
 	}
+
+	addCmdResult := &AddCmdResult{
+		CniVersion: cniConfig.CniVersion,
+		IPs: &nettool.AllocatedIP{
+			Version: "IPv4",
+			Address: podIP,
+			Gateway: gwIP,
+		},
+	}
+	addCmdResultBytes, err := json.Marshal(addCmdResult)
+	if err != nil {
+		return err
+	}
+
+	// kubelet expects json format from stdout if success
+	fmt.Print(string(addCmdResultBytes))
 
 	return nil
 }

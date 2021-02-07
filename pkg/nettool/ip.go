@@ -1,11 +1,14 @@
 package nettool
 
 import (
-	"fmt"
 	"net"
 )
 
-var ReservedIPs []string
+type AllocatedIP struct {
+	Version string `json:"version"`
+	Address string `json:"address"`
+	Gateway string `json:"gateway"`
+}
 
 func GetAllIPs(cidr string) ([]string, error) {
 	ip, ipnet, err := net.ParseCIDR(cidr)
@@ -29,14 +32,4 @@ func inc(ip net.IP) {
 			break
 		}
 	}
-}
-
-func RecycleIP(ip string) error {
-	for i, rip := range ReservedIPs {
-		if rip == ip {
-			ReservedIPs = append(ReservedIPs[:i], ReservedIPs[i+1:]...)
-			return nil
-		}
-	}
-	return fmt.Errorf("the IP not found in the reserved IP list")
 }
