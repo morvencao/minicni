@@ -22,8 +22,8 @@ func GetAllIPs(cidr string) ([]string, error) {
 }
 
 func inc(ip net.IP) {
-	i := len(ip) - 1
-	for {
+	ip = ip.To4()
+	for i := len(ip) - 1; i >= 0; i-- {
 		ip[i]++
 		if ip[i] > 0 {
 			break
