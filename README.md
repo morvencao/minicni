@@ -11,7 +11,7 @@ Read the following articles about container and kubernetes network:
 - [浅聊 Kubernetes 网络模型](https://morven.life/posts/networking-6-k8s-summary/)
 - [Container Network Interface Specification](https://github.com/containernetworking/cni/blob/master/SPEC.md)
 
-This repo responsible for implementing a Kubernetes overlay network, as well as for allocating and configuring network interfaces in pods. With minicni plugin installed into a kubernetes cluster, it should be able to achieve the following targets:
+This repo is responsible for implementing a Kubernetes overlay network, as well as for allocating and configuring network interfaces in pods. With minicni plugin installed into a kubernetes cluster, it should be able to achieve the following targets:
 
 - All the podd can communicate with each other directly without NAT.
 - All the nodes can communicate with all pods (and vice versa) without NAT.
