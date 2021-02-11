@@ -58,6 +58,8 @@ minicni-node-87c45   1/1     Running   0          38m
 kubectl apply -f tests/test-pods.yaml
 ```
 
+> Note: Make sure to label the master and worker node so that the testing pods can be scheduled to correct node.
+
 6. Verify the networking connections:
 
 - pod to host node
