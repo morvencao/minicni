@@ -1,6 +1,6 @@
 # minicni
 
-A simple CNI plugin implementation for kubernetes written in golang.
+A simple CNI plugin implementation for kubernetes written in golang. Read [使用 Go 从零开始实现 CNI](https://morven.life/posts/write_your_own_cni_with_golang/) for more information.
 
 ## TL;DR
 
