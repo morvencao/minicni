@@ -1,5 +1,8 @@
 # minicni
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/morvencao/minicni)](https://goreportcard.com/report/github.com/morvencao/minicni)
+[![Go Reference](https://pkg.go.dev/badge/github.com/morvencao/minicni.svg)](https://pkg.go.dev/github.com/morvencao/minicni)
+
 A simple CNI plugin implementation for kubernetes written in golang. Read [使用 Go 从零开始实现 CNI](https://morven.life/posts/write_your_own_cni_with_golang/) for more information.
 
 ## TL;DR
