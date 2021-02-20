@@ -8,7 +8,7 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["pods", "nodes"]
-    verbs: ["get"]
+    verbs: ["get", "list"]
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -51,7 +51,9 @@ data:
           "type": "minicni",
           "bridge": "minicni0",
           "mtu": 1500,
-          "subnet": __NODE_SUBNET__
+          "subnet": __NODE_SUBNET__,
+          "nodeSubnets": [__NODE_SUBNETS__],
+          "nodeAddresses": [__NODE_ADDRS__]
         }
 
 ---
